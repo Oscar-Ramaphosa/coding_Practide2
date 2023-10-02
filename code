@@ -1,0 +1,121 @@
+//this function get data from the InteliLog2 database tables and stores them to the comboBoxes
+        void showPermissionGrid()
+        {
+            using (SqlConnection connection = GetSqlServerConnection())
+            {
+                connection.Open();
+
+                // SELECT data from the employee table
+                string employeeTable = "SELECT id, fullName FROM employee";
+                SqlCommand command = new SqlCommand(employeeTable, connection);
+                SqlDataReader reader = command.ExecuteReader();
+                DataTable employeeData = new DataTable();
+                employeeData.Load(reader);
+                reader.Close();
+
+                //SELECT data from the groups table
+                string groupTable = "SELECT id, GroupName FROM groups";
+                SqlCommand command2 = new SqlCommand(groupTable, connection);
+                SqlDataReader reader2 = command2.ExecuteReader();
+                DataTable GroupData = new DataTable();
+                GroupData.Load(reader2);
+                reader2.Close();
+
+                //SELECT data from the sites table
+                string sitesTable = "SELECT id, description FROM sites";
+                SqlCommand command3 = new SqlCommand(sitesTable, connection);
+                SqlDataReader reader3 = command3.ExecuteReader();
+                DataTable siteData = new DataTable();
+                siteData.Load(reader3);
+                reader3.Close();
+
+                //SELECT data from the site_groups table
+                string siteGroupTable ="SELECT id, description FROM site_groups";
+                SqlCommand command4 = new SqlCommand(siteGroupTable, connection);
+                SqlDataReader reader4 = command4.ExecuteReader();
+                DataTable site_groupsData = new DataTable();
+                site_groupsData.Load(reader4);
+                reader4.Close();
+
+                //
+                string alow_deny_Table = "SELECT permission FROM allow_deny_perm";
+                SqlCommand command5 = new SqlCommand(alow_deny_Table, connection);
+                SqlDataReader reader5 = command5.ExecuteReader();
+                DataTable permision2Data = new DataTable();
+                permision2Data.Load(reader5);
+                reader5.Close();
+
+
+                // Create the combo box columns for user Column
+                DataGridViewComboBoxColumn employeeColumn = new DataGridViewComboBoxColumn();
+                employeeColumn.DataSource = employeeData;
+                employeeColumn.DisplayMember = "fullName";
+                employeeColumn.ValueMember = "id";
+                employeeColumn.DataPropertyName = "employeeId";
+                employeeColumn.HeaderText = "Users";
+                employeeColumn.FlatStyle = FlatStyle.Flat;
+                employeeColumn.DisplayIndex = 0;
+                permissionDataGrid.Columns.Add(employeeColumn);
+
+                //Create the combo box columns for group
+                DataGridViewComboBoxColumn groupColumn = new DataGridViewComboBoxColumn();
+                groupColumn.DataSource = GroupData;
+                groupColumn.DisplayMember = "GroupName";
+                groupColumn.ValueMember = "id";
+                groupColumn.DataPropertyName = "groupsId";
+                groupColumn.HeaderText = "Groups";
+                groupColumn.FlatStyle = FlatStyle.Flat;
+                groupColumn.DisplayIndex = 1;
+                permissionDataGrid.Columns.Add(groupColumn);
+
+                // Create the combo box columns for site
+                DataGridViewComboBoxColumn siteColumn = new DataGridViewComboBoxColumn();
+                siteColumn.DataSource = siteData;
+                siteColumn.DisplayMember = "description";
+                siteColumn.ValueMember = "id";
+                siteColumn.DataPropertyName = "SitesId";
+                siteColumn.FlatStyle = FlatStyle.Flat;
+                siteColumn.HeaderText = "Sites";
+                siteColumn.DisplayIndex = 2;
+                permissionDataGrid.Columns.Add(siteColumn);
+
+                // Create the combo box columns for site group
+                DataGridViewComboBoxColumn site_groupsColumn = new DataGridViewComboBoxColumn();
+                site_groupsColumn.DataSource = site_groupsData;
+                site_groupsColumn.DisplayMember = "description";
+                site_groupsColumn.ValueMember = "id";
+                site_groupsColumn.DataPropertyName = "site_groupsId";
+                site_groupsColumn.HeaderText = "Site Groups";
+                site_groupsColumn.FlatStyle = FlatStyle.Flat;
+                site_groupsColumn.DisplayIndex = 3;
+                permissionDataGrid.Columns.Add(site_groupsColumn);
+
+                //Create the combo box columns for permission
+                DataGridViewComboBoxColumn permissionColumn = new DataGridViewComboBoxColumn();
+                permissionColumn.DataSource = permision2Data; // This is the original data source
+                var filteredPermissionData = permision2Data.AsEnumerable().GroupBy(r => r.Field<string>("permission")).Select(r => r.First());
+                DataTable filteredPermissionTable = permision2Data.Clone();
+                foreach (DataRow row in filteredPermissionData)
+                    filteredPermissionTable.ImportRow(row);
+                permissionColumn.DataSource = filteredPermissionTable;
+                permissionColumn.DataSource = filteredPermissionTable;
+                permissionColumn.DisplayMember = "permission";
+                permissionColumn.DataPropertyName = "permission";
+                permissionColumn.HeaderText = "Permissions";
+                permissionColumn.DisplayIndex = 4;
+                permissionDataGrid.Columns.Add(permissionColumn);
+
+                permissionDataGrid.Rows.Add();
+
+                //the table must be empty until the user select the value
+                if (permissionDataGrid.Rows.Count > 0)
+                {
+                    permissionDataGrid.Rows[0].Cells[0].Value = DBNull.Value;
+                    permissionDataGrid.Rows[0].Cells[1].Value = DBNull.Value;
+                    permissionDataGrid.Rows[0].Cells[2].Value = DBNull.Value;
+                    permissionDataGrid.Rows[0].Cells[3].Value = DBNull.Value;
+                    permissionDataGrid.Rows[0].Cells[4].Value = DBNull.Value;
+                }
+            }
+        }
+
